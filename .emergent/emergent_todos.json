@@ -1,0 +1,50 @@
+[
+  {
+    "content": "Phase 1: Get Stripe integration playbook",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 1: Build POC test script (coin burn + draw entry + winner selection + jackpot math)",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 1: Run POC and fix until all core flows pass",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 2: Get design guidelines from design_agent",
+    "status": "in_progress"
+  },
+  {
+    "content": "Phase 2: Build backend (FastAPI + MongoDB + APScheduler + Stripe webhook)",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Build frontend (premium dark luxury UI per spec)",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Seed T1 Daily Flash and T2 Weekly Stakes draws",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Wire animated live jackpot counter (30s poll)",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: All user stories covered in development",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: End-to-end testing with testing_agent_v3",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 3: Add JWT auth + Google OAuth scaffolding + referrals + streaks + winner flow",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 3: Testing + polish + mobile responsiveness",
+    "status": "pending"
+  }
+]
