@@ -1,34 +1,26 @@
 [
   {
-    "content": "Part 1: Replace T3_SUPERBIKE with T3_BIWEEKLY_RIDE in seed.py (new fields, active status, cleanup stale doc)",
+    "content": "Part 1a: Add next_draw_time helper + seed all 3 draws with ISO UTC values",
     "status": "completed"
   },
   {
-    "content": "Part 2: Add T3 scheduler job (alternate Mondays 20:00 UTC)",
+    "content": "Part 1b: Advance next_draw_time after execute_draw (+1 / +7 / +14 days)",
     "status": "completed"
   },
   {
-    "content": "Part 3: Backend redemption endpoints (POST /api/draws/{draw_id}/redeem + GET redemption status + POST /api/draws/admin/demo-win)",
+    "content": "Part 2: CountdownTimer component with DD:HH:MM:SS + DRAW LIVE state",
     "status": "completed"
   },
   {
-    "content": "Part 4: DrawCard — handle active physical prize with PHYSICAL PRIZE badge + winner-chooses subline",
+    "content": "Part 3: Integrate timer into all 3 draw cards (DrawCard.js)",
     "status": "completed"
   },
   {
-    "content": "Part 5: New RedeemPrize page with 3 redemption cards + Delivery/Liquidation/Fleet Yield agreements",
+    "content": "Part 4: Integrate larger timer into DrawDetailPage below hero",
     "status": "completed"
   },
   {
-    "content": "Part 6: Route /redeem/:claim_id and DrawDetail → Claim Your Prize for winners",
-    "status": "completed"
-  },
-  {
-    "content": "Part 7: Results page — Run T3 now + Demo T3 Win buttons",
-    "status": "completed"
-  },
-  {
-    "content": "Verification: restart services, confirm 3 scheduler jobs, seed doc, /redeem endpoint live",
+    "content": "Verify: screenshots + next_draw_time advances after Run T1 demo",
     "status": "completed"
   }
 ]

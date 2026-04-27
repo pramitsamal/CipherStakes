@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import JackpotCounter from '@/components/common/JackpotCounter';
+import CountdownTimer from '@/components/common/CountdownTimer';
 import BurnModal from '@/components/common/BurnModal';
 import EntryReceipt from '@/components/common/EntryReceipt';
 
@@ -326,6 +327,21 @@ const DrawDetailPage = () => {
                                 </div>
                             )}
                         </div>
+
+                        {!isUpcoming && draw.next_draw_time && (
+                            <div className="mt-7" data-testid="draw-detail-countdown-wrap">
+                                <div
+                                    className="text-xs uppercase tracking-widest mb-2"
+                                    style={{ color: 'var(--cs-gold)' }}
+                                >
+                                    Time Until Draw
+                                </div>
+                                <CountdownTimer
+                                    targetTime={draw.next_draw_time}
+                                    size="hero"
+                                />
+                            </div>
+                        )}
 
                         <Separator className="my-6" style={{ backgroundColor: 'var(--cs-border)' }} />
 

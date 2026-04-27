@@ -1,26 +1,10 @@
 """Idempotent seed for initial draws (T1 daily, T2 weekly, T3 bi-weekly ride)."""
 import logging
-from datetime import datetime, timedelta, timezone
 
 from db import db
-from utils import now_iso, now_utc
+from utils import compute_next_draw_time, now_iso
 
 logger = logging.getLogger(__name__)
-
-
-def _next_biweekly_monday_iso() -> str:
-    """Return the next upcoming alternate Monday at 20:00 UTC as ISO string."""
-    now = now_utc()
-    days_ahead = (0 - now.weekday()) % 7  # 0 == Monday
-    if days_ahead == 0:
-        days_ahead = 7
-    next_mon = (now + timedelta(days=days_ahead)).replace(
-        hour=20, minute=0, second=0, microsecond=0
-    )
-    # Biweekly: prefer odd-week Mondays so cadence feels alternating.
-    if next_mon.isocalendar().week % 2 == 0:
-        next_mon = next_mon + timedelta(days=7)
-    return next_mon.astimezone(timezone.utc).isoformat()
 
 
 SEED_DRAWS = [
@@ -130,21 +114,46 @@ _SAFE_REFRESH_FIELDS = {
 
 
 async def seed_draws() -> None:
-    """Idempotent upsert of seed draws; preserves live jackpot values."""
+    """Idempotent upsert of seed draws; preserves live jackpot values.
+
+    Also guarantees every active draw has a valid `next_draw_time` (ISO UTC).
+    """
     # Clean up deprecated placeholder draws that have been replaced.
     await db.draws.delete_one({"draw_id": "T3_SUPERBIKE"})
 
     ts = now_iso()
-    next_t3 = _next_biweekly_monday_iso()
+
+    next_times = {
+        "T1_DAILY_FLASH": compute_next_draw_time("T1_DAILY_FLASH").isoformat(),
+        "T2_WEEKLY_STAKES": compute_next_draw_time("T2_WEEKLY_STAKES").isoformat(),
+        "T3_BIWEEKLY_RIDE": compute_next_draw_time("T3_BIWEEKLY_RIDE").isoformat(),
+    }
 
     for doc in SEED_DRAWS + UPCOMING_DRAWS:
         existing = await db.draws.find_one({"draw_id": doc["draw_id"]})
         extra: dict = {}
-        if doc["draw_id"] == "T3_BIWEEKLY_RIDE":
-            extra = {"next_draw_at": next_t3}
+        if doc["draw_id"] in next_times:
+            extra["next_draw_time"] = next_times[doc["draw_id"]]
         if existing:
             update = {k: v for k, v in doc.items() if k in _SAFE_REFRESH_FIELDS}
-            update.update(extra)
+            # Only backfill next_draw_time if missing / stale (in the past).
+            if doc["draw_id"] in next_times:
+                current_nxt = existing.get("next_draw_time") or existing.get(
+                    "next_draw_at"
+                )
+                if not current_nxt or current_nxt < ts:
+                    update["next_draw_time"] = next_times[doc["draw_id"]]
+                # Drop legacy field if present
+                unset = {}
+                if "next_draw_at" in existing:
+                    unset["next_draw_at"] = ""
+                update_op = {"$set": update}
+                if unset:
+                    update_op["$unset"] = unset
+                await db.draws.update_one(
+                    {"draw_id": doc["draw_id"]}, update_op
+                )
+                continue
             await db.draws.update_one({"draw_id": doc["draw_id"]}, {"$set": update})
         else:
             payload = {**doc, "created_at": ts, **extra}

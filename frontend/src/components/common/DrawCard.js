@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Coins, Clock, Truck, Wallet, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import CountdownTimer from '@/components/common/CountdownTimer';
 
 const formatCurrency = (n, fractionDigits = 0) =>
     Number(n || 0).toLocaleString(undefined, {
@@ -152,6 +153,17 @@ const DrawCard = ({ draw, featured = false }) => {
                         {prizeLabelText}
                     </span>
                 </div>
+                {!isUpcoming && draw.next_draw_time && (
+                    <div className="mt-4" data-testid={`draw-card-countdown-wrap-${draw.draw_id}`}>
+                        <div
+                            className="text-[10px] uppercase tracking-widest mb-1.5"
+                            style={{ color: 'var(--cs-text-muted)' }}
+                        >
+                            Next Draw In
+                        </div>
+                        <CountdownTimer targetTime={draw.next_draw_time} size="card" />
+                    </div>
+                )}
                 <div
                     className="mt-4 flex items-center justify-between text-xs"
                     style={{ color: 'var(--cs-text-muted)' }}

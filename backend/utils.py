@@ -3,7 +3,7 @@ import hashlib
 import secrets
 import string
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 
@@ -28,7 +28,62 @@ def current_cycle_key(draw_id: str) -> str:
     if draw_id == "T2_WEEKLY_STAKES":
         iso = now.isocalendar()
         return f"{iso.year}-W{iso.week:02d}"
+    if draw_id == "T3_BIWEEKLY_RIDE":
+        iso = now.isocalendar()
+        # biweekly: bucket pairs of ISO weeks together
+        bi_bucket = iso.week // 2
+        return f"{iso.year}-B{bi_bucket:02d}"
     return "default"
+
+
+def _at_2000_utc(dt: datetime) -> datetime:
+    return dt.replace(hour=20, minute=0, second=0, microsecond=0)
+
+
+def compute_next_draw_time(draw_id: str, now: datetime | None = None) -> datetime:
+    """Return the next scheduled draw time (UTC) for a given draw_id.
+
+    - T1 daily:    next 20:00 UTC (today if not yet passed, else tomorrow)
+    - T2 weekly:   next Sunday 20:00 UTC
+    - T3 biweekly: next Monday 20:00 UTC where ISO week is odd (alternate pattern)
+    """
+    now = now or now_utc()
+
+    if draw_id == "T1_DAILY_FLASH":
+        candidate = _at_2000_utc(now)
+        if candidate <= now:
+            candidate += timedelta(days=1)
+        return candidate
+
+    if draw_id == "T2_WEEKLY_STAKES":
+        # Python weekday(): Mon=0 ... Sun=6
+        days_ahead = (6 - now.weekday()) % 7
+        candidate = _at_2000_utc(now + timedelta(days=days_ahead))
+        if candidate <= now:
+            candidate += timedelta(days=7)
+        return candidate
+
+    if draw_id == "T3_BIWEEKLY_RIDE":
+        days_ahead = (0 - now.weekday()) % 7  # 0 == Monday
+        candidate = _at_2000_utc(now + timedelta(days=days_ahead))
+        if candidate <= now:
+            candidate += timedelta(days=7)
+        # Enforce alternating (odd ISO week) cadence
+        if candidate.isocalendar().week % 2 == 0:
+            candidate += timedelta(days=7)
+        return candidate
+
+    # Default: tomorrow 20:00 UTC
+    return _at_2000_utc(now + timedelta(days=1))
+
+
+def advance_draw_interval_days(draw_id: str) -> int:
+    """Days to add to next_draw_time after a draw is executed."""
+    return {
+        "T1_DAILY_FLASH": 1,
+        "T2_WEEKLY_STAKES": 7,
+        "T3_BIWEEKLY_RIDE": 14,
+    }.get(draw_id, 1)
 
 
 def make_id() -> str:

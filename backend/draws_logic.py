@@ -5,13 +5,16 @@ These functions are the heart of the MVP and were validated via
 """
 import logging
 import secrets
+from datetime import datetime, timedelta
 from typing import Optional
 
 from pymongo import ReturnDocument
 
 from db import db
 from utils import (
+    advance_draw_interval_days,
     compute_entry_hash,
+    compute_next_draw_time,
     current_cycle_key,
     make_id,
     now_iso,
@@ -94,6 +97,33 @@ async def enter_draw(
     return entries, user["coin_balance"], jackpot_after
 
 
+async def _advance_next_draw_time(draw_id: str, draw_doc: dict) -> None:
+    """After a draw executes, advance next_draw_time by its interval.
+
+    Uses the stored next_draw_time as the anchor so the schedule stays aligned.
+    Falls back to computing freshly from now() if anchor is missing / stale.
+    """
+    days = advance_draw_interval_days(draw_id)
+    anchor_iso = draw_doc.get("next_draw_time") or draw_doc.get("next_draw_at")
+    next_dt: datetime
+    if anchor_iso:
+        try:
+            anchor = datetime.fromisoformat(anchor_iso)
+            next_dt = anchor + timedelta(days=days)
+            # If still in the past (e.g. long outage), jump forward fresh
+            if next_dt <= now_utc():
+                next_dt = compute_next_draw_time(draw_id)
+        except Exception:
+            next_dt = compute_next_draw_time(draw_id)
+    else:
+        next_dt = compute_next_draw_time(draw_id)
+
+    await db.draws.update_one(
+        {"draw_id": draw_id},
+        {"$set": {"next_draw_time": next_dt.isoformat()}},
+    )
+
+
 async def execute_draw(draw_id: str) -> dict:
     """Run a draw for the current cycle.
 
@@ -131,6 +161,7 @@ async def execute_draw(draw_id: str) -> dict:
             "status": "no_winner",
         }
         await db.draw_results.insert_one(result)
+        await _advance_next_draw_time(draw_id, draw)
         return result
 
     idx = secrets.randbelow(total)
@@ -168,6 +199,9 @@ async def execute_draw(draw_id: str) -> dict:
         await db.draws.update_one(
             {"draw_id": draw_id}, {"$set": {"jackpot_usdc": floor}}
         )
+
+    # Advance the scheduled next_draw_time (T1 +1d, T2 +7d, T3 +14d)
+    await _advance_next_draw_time(draw_id, draw)
 
     # Notify winner (fire-and-forget)
     try:
