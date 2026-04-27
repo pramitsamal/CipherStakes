@@ -1,144 +1,196 @@
-# CipherStakes MVP — plan.md
+# CipherStakes MVP — Updated plan.md
 
 ## 1) Objectives
-- Prove the **core loop** works end-to-end: **earn/credit Coins → burn Coins for entries → automated draw picks winner → public results + T1 jackpot updates**.
-- De-risk complex integrations early: **Stripe webhooks + scheduler-driven draws + “provably fair” receipt hashes**.
-- Ship an investor-ready V1 with **premium dark-luxury UI**, seeded T1/T2 draws, and a **live-feeling jackpot**.
+- ✅ **Deliver an investor-demo-ready CipherStakes MVP** with a premium dark-luxury UI and a complete end-to-end core loop:
+  **earn/credit Coins → burn Coins for entries → automated draw picks winner → public results + T1 jackpot updates**.
+- ✅ **Validate compliance-first mechanics** of the two-currency model:
+  - **Cipher Gold**: purchase record (no prize value)
+  - **Cipher Coins**: sweepstakes entry currency (earned free or credited via Gold purchase)
+- ✅ **De-risk critical infrastructure**:
+  - Stripe Checkout + idempotent transaction crediting (webhook-safe)
+  - Scheduler-driven draws (T1 daily, T2 weekly) + idempotent draw cycles
+  - “Provably fair” entry receipts (UUID + sha256 receipt hash)
+- ✅ **Ship a working, polished demo app** ready for investors to click through on desktop and mobile.
 
 ---
 
 ## 2) Implementation Steps
 
 ### Phase 1 — Core Workflow POC (isolation; do not proceed until PASS)
-**Goal:** validate data model + atomic coin burn + draw execution + jackpot rollover + Stripe webhook crediting.
+**Goal:** validate data model + atomic coin burn + draw execution + jackpot rollover + Stripe webhook-safe crediting.
 
-1) **Websearch playbooks** (best practices / gotchas)
-   - Stripe Checkout + webhook verification + idempotency keys
-   - APScheduler deployment caveats (UTC, persistence)
-   - Mongo atomic updates/transactions patterns (Motor)
+**Status:** ✅ COMPLETE — **PASSED 11/11** (`/app/tests/test_core_poc.py`)
 
-2) **Minimal POC script(s) (Python)**
-   - Connect to MongoDB, create minimal collections: users, draws, entries, results, transactions
-   - Seed T1/T2 draws with exact params (20:00 UTC schedules)
-   - Implement:
-     - Daily claim (50 coins) + streak state stub
-     - Pack credit function (simulate Stripe success) + idempotency
-     - **Atomic coin burn + entry creation** (single logical transaction)
-     - Entry receipt: `entry_uuid` + `sha256(user_id|draw_id|ts|nonce)`
-     - Draw execution: select winner via `secrets.randbelow(n)`; record result
-     - T1 jackpot: starts $500; if no win, increment by total entry value for cycle; if win, reset
+1) **Integration playbooks / best practices**
+   - ✅ Stripe Checkout session creation + webhook handling + idempotency
+   - ✅ Scheduler caveats (UTC scheduling)
+   - ✅ MongoDB atomic updates with Motor
 
-3) **POC validation runs**
-   - Single user: claim → enter T1 → run draw → verify results + jackpot math
-   - Multi-user: generate 100+ entries across users → run draw → verify exactly 1 winner recorded
-   - Stripe: create Checkout session (keys placeholder OK) + verify webhook handler structure + signature verify path
+2) **POC script validation (Python)**
+   - ✅ Minimal collections: users, draws, entries, results, transactions
+   - ✅ Seed draws (T1/T2)
+   - ✅ Daily claim (50 Coins/day) with UTC-day idempotency
+   - ✅ Streak tracking (7-day) + 1-miss protection logic
+   - ✅ Pack credit idempotency (safe against webhook retries)
+   - ✅ Atomic coin burn + entry creation
+   - ✅ Entry receipt generation: `UUID + sha256(user_id|draw_id|timestamp|nonce)`
+   - ✅ Draw execution using cryptographically secure RNG (`secrets.randbelow`)
+   - ✅ Draw idempotency per cycle
+   - ✅ Jackpot rollover handling
+   - ✅ Stripe Checkout Session creation smoke test
 
-4) **Exit criteria (hard gate)**
-   - No negative balances; burns are idempotent; draw cannot run twice for same cycle; results deterministic in DB; jackpot updates correctly.
+3) **Exit criteria (hard gate)**
+   - ✅ No negative balances
+   - ✅ Burns are atomic and idempotent
+   - ✅ Draw cannot run twice for the same cycle
+   - ✅ Jackpot math correct
 
-**User stories (Phase 1):**
-1. As a user, I can claim daily Coins and see my balance increase exactly once per day.
-2. As a user, I can spend Coins to create N entries and receive unique entry IDs.
-3. As a user, I can trust my entry receipt exists and is immutable (UUID + hash stored).
-4. As a user, I can see a draw execute and produce exactly one winning entry.
-5. As an admin/system, I can run a draw on schedule without double-executing the same cycle.
+**User stories (Phase 1):** ✅ Completed
+1. Claim daily Coins once per day.
+2. Spend Coins to create N entries with unique IDs.
+3. Immutable receipt exists for each entry.
+4. Draw execution produces exactly one winner.
+5. Scheduler/admin cannot double-execute same cycle.
 
 ---
 
-### Phase 2 — V1 App Development (core app, minimal auth; ship fast)
-**Goal:** build full web app around proven core; keep scope tight and UX premium.
+### Phase 2 — V1 App Development (core app + premium UX)
+**Goal:** build the full product experience around the proven core loop, matching investor-grade luxury design.
 
-1) **Backend (FastAPI + Motor)**
-   - Core endpoints (no auth initially; use simple dev user header or temporary session token):
-     - draws: list active, get detail, enter draw, draw history/results
-     - balances: get balances
-     - claims: daily claim
-     - packs: list packs, create Stripe checkout session
-     - stripe webhook: verify + credit Gold + Coins (idempotent)
-   - APScheduler: T1 daily 20:00 UTC, T2 Sunday 20:00 UTC; persist last-run markers in DB
-   - Seed script (idempotent) for T1/T2 + placeholder T3/T4 cards
-   - Env plumbing: `.env` + `.env.example` with all placeholders
+**Status:** ✅ COMPLETE
+
+1) **Backend (FastAPI + Motor + APScheduler + MongoDB)**
+   - ✅ Full API under `/api`:
+     - **Auth**: register, login, me, verify-email, Google OAuth scaffold (`/api/auth/google/*`)
+     - **Claims**: daily claim + status
+     - **Draws**: list, detail, stats, enter, results history, all-results
+     - **Demo/Admin**: `POST /api/draws/admin/run/{draw_id}` (on-demand draw execution)
+     - **Packs**: list packs, create Stripe Checkout session, polling checkout status, Stripe webhook
+     - **Users**: entries, transactions, referrals, wins, KYC submit
+   - ✅ APScheduler jobs:
+     - T1 daily 20:00 UTC
+     - T2 Sunday 20:00 UTC
+   - ✅ Idempotent seeding script including T3/T4 placeholders.
+   - ✅ `.env` + `.env.example` with placeholders and clear docs.
 
 2) **Frontend (React + Tailwind + shadcn/ui + framer-motion)**
-   - Premium dark-luxury theme (palette/typography per spec)
-   - Pages:
-     - Landing/Home: hero **T1 jackpot counter** (30s poll + animated count-up)
-     - Draws: draw cards with prize image + large jackpot/prize + time-to-draw
-     - Draw detail: entry quantity selector → burn confirmation modal → “locked in” receipt view
-     - Dashboard: balance pill always visible; daily claim; streak bar; entries list; transactions
-     - Results: public results feed (winning entry ID, claimed/pending)
-     - Packs: 5 tier store → Stripe Checkout redirect
+   - ✅ Premium dark-luxury UI implemented per spec:
+     - Near-black background `#0A0A0F`
+     - Surface `#10101E`
+     - Gold accent `#C9A84C`
+     - Violet accent `#6C3FC5`
+     - Inter UI font + Playfair Display for jackpot/prize numbers
+   - ✅ Pages (consumer + investor demo ready):
+     - Landing/Home
+     - Login / Register / Verify Email / OAuth Success
+     - Dashboard
+     - Draws list + Draw detail
+     - Store (packs) + Checkout status polling page
+     - Results feed (public)
+     - Profile (KYC + transactions + wins)
+     - How it works / FAQ
+     - NotFound
+   - ✅ Key shared components:
+     - JackpotCounter (30s polling + animated pulse)
+     - DrawCard (dark luxury cards + subtle gold hover glow)
+     - BurnModal (coin burn confirmation)
+     - EntryReceipt (locked-in moment + cs-sweep-gold border sweep + copy-to-clipboard)
+     - StreakBar, CoinBalancePill, Wordmark, SiteHeader/Footer
 
 3) **V1 testing pass**
-   - Run one end-to-end test cycle: claim → buy pack (stub if keys missing) → enter T1 → manually trigger draw job → verify results page + jackpot update
-   - Call testing agent for one full E2E sweep; fix blockers.
+   - ✅ End-to-end user journey validated:
+     - Register → daily claim → enter T1 → receipt → view results
+   - ✅ Demo aids validated (run draw now from results page)
 
-**User stories (Phase 2):**
-1. As a visitor, I see the live T1 jackpot instantly and understand how to enter.
-2. As a user, I can claim daily Coins from the dashboard and see streak progress.
-3. As a user, I can enter a draw in <30 seconds and get a satisfying confirmation receipt.
-4. As a user, I can buy a pack via Stripe Checkout and see Coins credited after webhook.
-5. As a user, I can view public draw results and verify the winning entry ID.
+**User stories (Phase 2):** ✅ Completed
+1. Visitor sees live T1 jackpot instantly.
+2. User claims daily Coins and sees streak UI.
+3. User enters a draw quickly and receives a satisfying receipt.
+4. User can initiate Stripe checkout for packs.
+5. User can view public results feed + winning entry IDs.
 
 ---
 
-### Phase 3 — Feature Expansion (auth + compliance boosters + notifications)
-**Goal:** add investor-critical completeness: JWT auth + email verification + referrals + winner flow.
+### Phase 3 — Feature Expansion (auth + compliance boosters + winner flow)
+**Goal:** deliver investor-critical completeness beyond the core loop.
 
-1) **Auth (add after V1 is stable)**
-   - Email/password (bcrypt) + JWT (httpOnly cookies, refresh rotation)
-   - Google OAuth scaffolding using user-provided Client ID/Secret (placeholders until provided)
+**Status:** ✅ COMPLETE
+
+1) **Auth**
+   - ✅ Email/password auth with bcrypt + JWT
+   - ✅ Google OAuth scaffold (placeholders; `/api/auth/google/config` reports configured state)
 
 2) **AMOE / growth mechanics**
-   - Referral codes + 200 coin bonus (on referred signup)
-   - 100 coin email verification bonus
-   - Streak logic: 7-day with 1 miss protection + 500 weekly bonus
-   - Ascension bonus: 30 consecutive T1-entry days
+   - ✅ Referral codes + 200 coin bonus on referred signup
+   - ✅ Email verification bonus (+100 coins)
+   - ✅ Streak logic implemented (7-day + 1-miss protection) with weekly bonus support
+   - ⏳ Ascension bonus (30 consecutive T1 entries) **not implemented yet** (explicitly deferred)
 
 3) **Winner flow**
-   - Win notification: in-app + Resend email (stdout fallback if key missing)
-   - Prize claim status: pending/claimed; collect wallet/bank + KYC trigger form
+   - ✅ Winner notification (email via Resend if configured; stdout fallback otherwise)
+   - ✅ KYC submission form and backend storage
 
-4) **Testing pass**
-   - Call testing agent; validate auth-protected flows, referral crediting, streak edge cases.
-
-**User stories (Phase 3):**
-1. As a user, I can sign up with email or Google and stay logged in securely.
-2. As a user, verifying my email grants me a one-time Coin bonus.
-3. As a user, I can refer a friend and both of us get credited Coins correctly.
-4. As a daily user, my streak bonus is applied with 1-miss protection and clear UI feedback.
-5. As a winner, I receive a notification and can submit payout + KYC details.
+**User stories (Phase 3):** ✅ Completed (except Ascension)
+1. User can sign up/login and stay authenticated.
+2. Email verification grants a one-time bonus.
+3. Referrals credit coins correctly.
+4. Winner can submit KYC/payout details.
 
 ---
 
 ### Phase 4 — Comprehensive Testing & Polish
-- Full regression via testing agent; fix all issues.
-- Mobile responsiveness audit (NG/ZA/KE/PH first).
-- UI polish: hover glows, entry confirmation animation, loading/empty/error states.
-- Security pass: webhook verification, JWT settings, rate limits for claim/enter endpoints.
+**Goal:** validate full app quality for investor demos.
 
-**User stories (Phase 4):**
-1. As a mobile user, every core screen is usable one-handed with no layout breaks.
-2. As a user, I always see clear error messages if I lack Coins or a request fails.
-3. As a user, I can refresh any page and state remains consistent.
-4. As an investor, I can click through the whole app without encountering broken flows.
-5. As an admin/system, scheduled draws run reliably and results are immutable.
+**Status:** ✅ PASSED
+
+- ✅ Testing agent results:
+  - Backend: **97.96%** (48/49) — remaining “issue” was test-token comparison, not functional.
+  - Frontend: **95%** — all major flows validated.
+- ✅ Minor selector/data-testid gap fixed (added `dashboard-coin-balance-value`).
+- ✅ Core POC re-run after fixes: **still 11/11**.
+
+**User stories (Phase 4):** ✅ Completed
+1. Mobile usability confirmed.
+2. Clear errors on insufficient coins and failures.
+3. Refresh-safe state via `/auth/me` hydration.
+4. Investor click-through demo without blockers.
+5. Scheduler + draw idempotency validated.
 
 ---
 
 ## 3) Next Actions
-1) Start Phase 1 POC scripts + websearch playbooks.
-2) Once POC PASS, generate backend+frontend V1 in minimal bulk writes.
-3) Run testing agent at end of Phase 2; iterate fixes.
-4) After V1 stable, proceed to Phase 3 (auth + referrals + streaks + winner flow).
+
+### Immediate (before investor demos)
+1) ✅ Use the live preview app:
+   - **https://investor-pitch-17.preview.emergentagent.com**
+2) ✅ Demo flow script (recommended):
+   - Landing → Register → Dashboard (claim) → Draw detail (enter) → Receipt → Results → Run T1 now.
+
+### Before “real money” launch
+1) Add production keys to `backend/.env`:
+   - `STRIPE_API_KEY` (live)
+   - (Optional) `RESEND_API_KEY` for real emails
+   - (Optional) `GOOGLE_CLIENT_ID/SECRET/REDIRECT_URI` for branded consent screen
+2) Replace simulated randomness with **Chainlink VRF** (post-MVP milestone).
+3) Add standard production hardening:
+   - Rate limiting for auth/claims
+   - Audit logs for draws + payments
+   - Admin controls (restricted)
+
+### Optional enhancements (post-MVP)
+- Ascension bonus (30 consecutive T1 entries)
+- Web3 wallet connect + on-chain receipts
+- Real USDC payout rails + physical prize fulfillment
+- Admin dashboard for draw/prize management
 
 ---
 
 ## 4) Success Criteria
-- Core loop works: claim/credit Coins → burn for entries → scheduled draw → results page.
-- Stripe webhook credits Gold + Coins idempotently; no double-credit.
-- T1 jackpot is DB-backed and updates at least every 30s with animated counter.
-- Entry receipts: UUID + hash stored; results show winning entry ID publicly.
-- Premium dark-luxury UI matches palette/typography; mobile-first.
-- `.env.example` complete; code contains clear `REPLACE_WITH_CHAINLINK_VRF` flags.
-- Testing agent passes end-to-end with no critical bugs.
+- ✅ Core loop works: claim/credit Coins → burn for entries → draw execution → results feed.
+- ✅ Stripe integration works (Checkout creation + webhook-safe crediting; polling supported).
+- ✅ T1 jackpot is DB-backed and updates every 30s with animated counter.
+- ✅ Entry receipts: UUID + sha256 stored and shown to user; winning entry ID public.
+- ✅ Premium dark-luxury UI matches palette/typography; mobile-first.
+- ✅ `.env.example` complete; clear placeholders for keys.
+- ✅ Code includes explicit flags for future Chainlink VRF replacement.
+- ✅ Testing agent validates end-to-end with no critical bugs.

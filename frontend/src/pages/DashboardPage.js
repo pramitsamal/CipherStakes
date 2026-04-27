@@ -121,7 +121,9 @@ const DashboardPage = () => {
                                     style={{ color: 'var(--cs-gold)' }}
                                     data-testid="dashboard-coin-balance"
                                 >
-                                    {format(user?.coin_balance)}
+                                    <span data-testid="dashboard-coin-balance-value">
+                                        {format(user?.coin_balance)}
+                                    </span>
                                 </div>
                                 <div
                                     className="mt-2 text-xs"

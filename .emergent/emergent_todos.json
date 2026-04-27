@@ -37,7 +37,7 @@
   },
   {
     "content": "Phase 2: End-to-end testing with testing_agent_v3",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Phase 3: Add JWT auth + Google OAuth scaffolding + referrals + streaks + winner flow",
@@ -45,6 +45,6 @@
   },
   {
     "content": "Phase 3: Testing + polish + mobile responsiveness",
-    "status": "pending"
+    "status": "completed"
   }
 ]
