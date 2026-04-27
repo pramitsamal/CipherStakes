@@ -54,6 +54,7 @@ class Draw(BaseModel):
     prize_type: Literal["usdc_jackpot_rolling", "usdc_fixed", "physical"]
     jackpot_usdc: Optional[float] = None
     prize_fixed_usdc: Optional[float] = None
+    prize_value_usd: Optional[float] = None
     prize_label: Optional[str] = None
     schedule_cron: str
     next_draw_at: Optional[str] = None
@@ -131,3 +132,24 @@ class KycSubmitRequest(BaseModel):
     wallet_address: Optional[str] = None
     bank_details: Optional[str] = None
     entry_id: Optional[str] = None
+
+
+# ---------- T3 Redemption ----------
+class DeliveryDetails(BaseModel):
+    full_name: str
+    address_line1: str
+    address_line2: Optional[str] = None
+    city: str
+    country: str
+    postal_code: str
+    phone: str
+    id_number: str
+    id_document_url: Optional[str] = None
+
+
+class RedemptionRequest(BaseModel):
+    winner_claim_id: str
+    redemption_type: Literal["delivery", "liquidate", "yield"]
+    delivery_details: Optional[DeliveryDetails] = None
+    liquidation_acknowledged: bool = False
+    yield_agreement_signed: bool = False

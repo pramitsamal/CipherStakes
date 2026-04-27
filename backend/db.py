@@ -1,4 +1,4 @@
-"""MongoDB client + shared async database handle."""
+"""MongoDB client + shared async database handle + index creation."""
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
@@ -21,11 +21,19 @@ async def create_indexes() -> None:
         [("user_id", 1), ("day_key", 1)], unique=True
     )
     await db.entries.create_index("entry_id", unique=True)
-    await db.entries.create_index([("draw_id", 1), ("draw_cycle", 1), ("status", 1)])
+    await db.entries.create_index(
+        [("draw_id", 1), ("draw_cycle", 1), ("status", 1)]
+    )
     await db.entries.create_index([("user_id", 1), ("timestamp", -1)])
     await db.draws.create_index("draw_id", unique=True)
     await db.draw_results.create_index(
         [("draw_id", 1), ("cycle", 1)], unique=True
     )
+    await db.draw_results.create_index("winning_entry_id")
     await db.payment_transactions.create_index("session_id", unique=True)
-    await db.payment_transactions.create_index([("user_id", 1), ("created_at", -1)])
+    await db.payment_transactions.create_index(
+        [("user_id", 1), ("created_at", -1)]
+    )
+    # T3 redemption flow
+    await db.redemptions.create_index("winner_claim_id", unique=True)
+    await db.redemptions.create_index([("user_id", 1), ("created_at", -1)])

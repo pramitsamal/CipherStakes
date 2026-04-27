@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Copy, Trophy } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Copy, Trophy, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import api from '@/lib/api';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formatCurrency = (n) =>
     Number(n || 0).toLocaleString(undefined, {
@@ -21,7 +23,10 @@ const ResultsPage = () => {
     const [skip, setSkip] = useState(0);
     const [total, setTotal] = useState(0);
     const [running, setRunning] = useState(null);
+    const [demoing, setDemoing] = useState(false);
     const limit = 20;
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -56,6 +61,30 @@ const ResultsPage = () => {
         }
     };
 
+    const demoT3Win = async () => {
+        if (!user) {
+            toast.message('Log in to demo a T3 win');
+            navigate('/login?next=/results');
+            return;
+        }
+        setDemoing(true);
+        try {
+            const res = await api.post('/draws/admin/demo-win/T3_BIWEEKLY_RIDE');
+            const claimId = res.data?.winner_claim_id;
+            if (claimId) {
+                toast.success('Demo T3 win created — opening redemption flow');
+                navigate(`/redeem/${claimId}`);
+            } else {
+                toast.error('Could not create demo win');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.detail || 'Demo failed';
+            toast.error(typeof msg === 'string' ? msg : 'Demo failed');
+        } finally {
+            setDemoing(false);
+        }
+    };
+
     const copy = async (text, label) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -80,7 +109,7 @@ const ResultsPage = () => {
                             Every executed draw, verifiable winning entry ID, and receipt hash. CipherStakes uses cryptographically secure RNG (CSPRNG) for winner selection.
                         </p>
                     </div>
-                    <div className="flex gap-2" data-testid="results-demo-run">
+                    <div className="flex flex-wrap gap-2" data-testid="results-demo-run">
                         <Button
                             onClick={() => runDemo('T1_DAILY_FLASH')}
                             disabled={running === 'T1_DAILY_FLASH'}
@@ -100,6 +129,29 @@ const ResultsPage = () => {
                             data-testid="results-run-t2-button"
                         >
                             Run T2 now (demo)
+                        </Button>
+                        <Button
+                            onClick={() => runDemo('T3_BIWEEKLY_RIDE')}
+                            disabled={running === 'T3_BIWEEKLY_RIDE'}
+                            variant="ghost"
+                            className="border text-xs"
+                            style={{ borderColor: 'var(--cs-border)', color: 'var(--cs-gold)' }}
+                            data-testid="results-run-t3-button"
+                        >
+                            Run T3 now (demo)
+                        </Button>
+                        <Button
+                            onClick={demoT3Win}
+                            disabled={demoing}
+                            className="text-xs gap-2 font-medium"
+                            style={{
+                                backgroundColor: 'var(--cs-gold)',
+                                color: 'var(--cs-bg)',
+                            }}
+                            data-testid="results-demo-t3-win-button"
+                        >
+                            <Sparkles size={12} />
+                            {demoing ? 'Creating win…' : 'Demo T3 Win'}
                         </Button>
                     </div>
                 </div>

@@ -1,50 +1,34 @@
 [
   {
-    "content": "Phase 1: Get Stripe integration playbook",
+    "content": "Part 1: Replace T3_SUPERBIKE with T3_BIWEEKLY_RIDE in seed.py (new fields, active status, cleanup stale doc)",
     "status": "completed"
   },
   {
-    "content": "Phase 1: Build POC test script (coin burn + draw entry + winner selection + jackpot math)",
+    "content": "Part 2: Add T3 scheduler job (alternate Mondays 20:00 UTC)",
     "status": "completed"
   },
   {
-    "content": "Phase 1: Run POC and fix until all core flows pass",
+    "content": "Part 3: Backend redemption endpoints (POST /api/draws/{draw_id}/redeem + GET redemption status + POST /api/draws/admin/demo-win)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Get design guidelines from design_agent",
+    "content": "Part 4: DrawCard — handle active physical prize with PHYSICAL PRIZE badge + winner-chooses subline",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Build backend (FastAPI + MongoDB + APScheduler + Stripe webhook)",
+    "content": "Part 5: New RedeemPrize page with 3 redemption cards + Delivery/Liquidation/Fleet Yield agreements",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Build frontend (premium dark luxury UI per spec)",
+    "content": "Part 6: Route /redeem/:claim_id and DrawDetail → Claim Your Prize for winners",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Seed T1 Daily Flash and T2 Weekly Stakes draws",
+    "content": "Part 7: Results page — Run T3 now + Demo T3 Win buttons",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Wire animated live jackpot counter (30s poll)",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: All user stories covered in development",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: End-to-end testing with testing_agent_v3",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 3: Add JWT auth + Google OAuth scaffolding + referrals + streaks + winner flow",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 3: Testing + polish + mobile responsiveness",
+    "content": "Verification: restart services, confirm 3 scheduler jobs, seed doc, /redeem endpoint live",
     "status": "completed"
   }
 ]

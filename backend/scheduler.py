@@ -1,6 +1,12 @@
-"""APScheduler setup for automated draw execution (T1 daily, T2 weekly).
+"""APScheduler setup for automated draw execution.
 
-Draws also remain executable on-demand via admin endpoint for demos.
+Three draw cadences:
+- T1 Daily Flash     — every day at 20:00 UTC
+- T2 Weekly Stakes   — every Sunday at 20:00 UTC
+- T3 Bi-Weekly Ride  — every alternate Monday at 20:00 UTC (week='*/2')
+
+All three call the same draw-execution function; for demos use the admin
+endpoint `POST /api/draws/admin/run/{draw_id}` to trigger on-demand.
 """
 import asyncio
 import logging
@@ -34,23 +40,51 @@ def start_scheduler() -> None:
     if _scheduler is not None:
         return
     sched = AsyncIOScheduler(timezone="UTC")
+
     # T1 — Daily 20:00 UTC
     sched.add_job(
         lambda: asyncio.create_task(_run_draw_safely("T1_DAILY_FLASH")),
         CronTrigger(hour=20, minute=0, timezone="UTC"),
         id="t1_daily_flash",
+        name="T1 Daily Flash",
         replace_existing=True,
     )
-    # T2 — Sunday 20:00 UTC (day_of_week=0 is Monday in APScheduler; use "sun")
+    # T2 — Sunday 20:00 UTC
     sched.add_job(
         lambda: asyncio.create_task(_run_draw_safely("T2_WEEKLY_STAKES")),
         CronTrigger(day_of_week="sun", hour=20, minute=0, timezone="UTC"),
         id="t2_weekly_stakes",
+        name="T2 Weekly Stakes",
         replace_existing=True,
     )
+    # T3 — Bi-weekly Monday 20:00 UTC (every 2nd ISO week)
+    sched.add_job(
+        lambda: asyncio.create_task(_run_draw_safely("T3_BIWEEKLY_RIDE")),
+        CronTrigger(
+            day_of_week="mon",
+            hour=20,
+            minute=0,
+            week="*/2",
+            timezone="UTC",
+        ),
+        id="t3_biweekly_ride",
+        name="T3 Bi-Weekly Ride",
+        replace_existing=True,
+    )
+
     sched.start()
     _scheduler = sched
-    logger.info("APScheduler started (T1 daily 20:00 UTC, T2 Sun 20:00 UTC)")
+    for job in sched.get_jobs():
+        logger.info(
+            "[scheduler] registered job %s (%s) next_run=%s",
+            job.id,
+            job.name,
+            job.next_run_time,
+        )
+    logger.info(
+        "APScheduler started with 3 jobs: T1 (daily 20:00 UTC), "
+        "T2 (Sun 20:00 UTC), T3 (alt Mondays 20:00 UTC)"
+    )
 
 
 def stop_scheduler() -> None:

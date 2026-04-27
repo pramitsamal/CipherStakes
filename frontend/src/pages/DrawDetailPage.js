@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Coins, Users, Minus, Plus, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Clock, Coins, Users, Minus, Plus, ArrowLeft, ShieldCheck, Trophy, Truck, Wallet, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +32,7 @@ const DrawDetailPage = () => {
     const [burning, setBurning] = useState(false);
     const [receipt, setReceipt] = useState(null);
     const [jackpotAfter, setJackpotAfter] = useState(null);
+    const [pendingClaim, setPendingClaim] = useState(null); // unredeemed winning claim on this draw
 
     const loadDraw = useCallback(async () => {
         try {
@@ -49,9 +50,42 @@ const DrawDetailPage = () => {
         }
     }, [drawId, navigate]);
 
+    // Detect if user has an unredeemed winning entry on this physical draw
+    const loadPendingClaim = useCallback(async () => {
+        if (!user) {
+            setPendingClaim(null);
+            return;
+        }
+        try {
+            const res = await api.get('/users/me/wins');
+            const wins = res.data || [];
+            const winForThisDraw = wins.find(
+                (w) => w.draw_id === drawId && w.winning_entry_id && w.winner === user.user_id,
+            );
+            if (!winForThisDraw) {
+                setPendingClaim(null);
+                return;
+            }
+            const status = await api.get(
+                `/draws/redeem/status/${winForThisDraw.winning_entry_id}`,
+            );
+            if (status.data?.redeemed) {
+                setPendingClaim(null);
+            } else {
+                setPendingClaim(winForThisDraw);
+            }
+        } catch (_e) {
+            setPendingClaim(null);
+        }
+    }, [drawId, user]);
+
     useEffect(() => {
         loadDraw();
     }, [loadDraw]);
+
+    useEffect(() => {
+        loadPendingClaim();
+    }, [loadPendingClaim]);
 
     const openModal = () => {
         if (!user) {
@@ -100,7 +134,11 @@ const DrawDetailPage = () => {
             ? 'Draws daily at 20:00 UTC'
             : draw.draw_id === 'T2_WEEKLY_STAKES'
               ? 'Draws every Sunday 20:00 UTC'
-              : 'Draws on schedule';
+              : draw.draw_id === 'T3_BIWEEKLY_RIDE'
+                ? 'Alt. Mondays 20:00 UTC'
+                : 'Draws on schedule';
+
+    const isPhysical = draw.prize_type === 'physical';
 
     return (
         <div data-testid="draw-detail-page" className="cs-grid-bg">
@@ -113,6 +151,61 @@ const DrawDetailPage = () => {
                 >
                     <ArrowLeft size={14} /> All draws
                 </Link>
+
+                {pendingClaim && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6 rounded-2xl border p-5 sm:p-6 cs-sweep-gold relative flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between"
+                        style={{
+                            backgroundColor: 'var(--cs-surface)',
+                            borderColor: 'rgba(201,168,76,0.4)',
+                            boxShadow: 'var(--cs-glow-gold)',
+                        }}
+                        data-testid="draw-detail-winner-banner"
+                    >
+                        <div className="flex items-start gap-3">
+                            <div
+                                className="rounded-full p-2"
+                                style={{ backgroundColor: 'rgba(34,197,94,0.12)' }}
+                            >
+                                <Trophy size={22} style={{ color: 'var(--cs-success)' }} />
+                            </div>
+                            <div>
+                                <div
+                                    className="text-xs uppercase tracking-widest"
+                                    style={{ color: 'var(--cs-success)' }}
+                                >
+                                    You won this draw
+                                </div>
+                                <div
+                                    className="cs-display text-2xl mt-1"
+                                    style={{ color: 'var(--cs-text)' }}
+                                >
+                                    {draw.prize_label || draw.title}
+                                </div>
+                                <div
+                                    className="mt-1 text-xs"
+                                    style={{ color: 'var(--cs-text-muted)' }}
+                                >
+                                    Choose how to redeem — delivery, liquidate, or fleet yield.
+                                </div>
+                            </div>
+                        </div>
+                        <Link to={`/redeem/${pendingClaim.winning_entry_id}`}>
+                            <Button
+                                className="h-11 gap-2 font-medium"
+                                style={{
+                                    backgroundColor: 'var(--cs-gold)',
+                                    color: 'var(--cs-bg)',
+                                }}
+                                data-testid="draw-detail-claim-prize-cta"
+                            >
+                                <ShieldCheck size={14} /> Claim your prize
+                            </Button>
+                        </Link>
+                    </motion.div>
+                )}
                 <div className="grid gap-8 lg:grid-cols-2">
                     {/* Visual */}
                     <div
@@ -134,7 +227,7 @@ const DrawDetailPage = () => {
                                     'radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 80%)',
                             }}
                         />
-                        <div className="absolute top-4 left-4 flex gap-2">
+                        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                             <Badge
                                 className="border"
                                 style={{
@@ -145,6 +238,19 @@ const DrawDetailPage = () => {
                             >
                                 {draw.tier}
                             </Badge>
+                            {isPhysical && !isUpcoming && (
+                                <Badge
+                                    className="border font-semibold tracking-wider"
+                                    style={{
+                                        backgroundColor: 'rgba(10,10,15,0.78)',
+                                        borderColor: 'rgba(201,168,76,0.5)',
+                                        color: 'var(--cs-gold)',
+                                    }}
+                                    data-testid="draw-detail-physical-badge"
+                                >
+                                    PHYSICAL PRIZE
+                                </Badge>
+                            )}
                             {isUpcoming && (
                                 <Badge className="border" style={{ borderColor: 'var(--cs-border)' }}>
                                     Coming soon
@@ -167,6 +273,14 @@ const DrawDetailPage = () => {
                         <div className="mt-6">
                             {isJackpot ? (
                                 <JackpotCounter drawId={draw.draw_id} initial={draw.jackpot_usdc} />
+                            ) : isPhysical ? (
+                                <div
+                                    className="cs-display text-5xl sm:text-6xl tabular-nums"
+                                    style={{ color: 'var(--cs-gold)' }}
+                                    data-testid="draw-detail-prize-physical"
+                                >
+                                    {format(draw.prize_value_usd)}
+                                </div>
                             ) : (
                                 <div
                                     className="cs-display text-5xl sm:text-6xl tabular-nums"
@@ -180,8 +294,37 @@ const DrawDetailPage = () => {
                                 className="mt-1 text-xs"
                                 style={{ color: 'var(--cs-text-muted)' }}
                             >
-                                {isJackpot ? 'Rolling USDC jackpot — grows until won' : 'Fixed USDC prize'}
+                                {isJackpot
+                                    ? 'Rolling USDC jackpot — grows until won'
+                                    : isPhysical
+                                      ? `Physical prize · ${draw.prize_label || 'Luxury asset'}`
+                                      : 'Fixed USDC prize'}
                             </div>
+                            {isPhysical && !isUpcoming && (
+                                <div
+                                    className="mt-3 flex flex-wrap items-center gap-3 text-xs"
+                                    style={{ color: 'var(--cs-text-muted)' }}
+                                    data-testid="draw-detail-winner-chooses"
+                                >
+                                    <span
+                                        className="uppercase tracking-widest"
+                                        style={{ color: 'var(--cs-gold)' }}
+                                    >
+                                        Winner chooses
+                                    </span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <Truck size={12} /> Take Delivery
+                                    </span>
+                                    <span className="opacity-40">·</span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <Wallet size={12} /> Liquidate
+                                    </span>
+                                    <span className="opacity-40">·</span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <TrendingUp size={12} /> Earn $1,500–$1,750/mo
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         <Separator className="my-6" style={{ backgroundColor: 'var(--cs-border)' }} />

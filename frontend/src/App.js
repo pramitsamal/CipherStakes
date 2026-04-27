@@ -21,6 +21,7 @@ import CheckoutStatusPage from '@/pages/CheckoutStatusPage';
 import ResultsPage from '@/pages/ResultsPage';
 import ProfilePage from '@/pages/ProfilePage';
 import HowItWorksPage from '@/pages/HowItWorksPage';
+import RedeemPrize from '@/pages/RedeemPrize';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 const EnsureDarkMode = ({ children }) => {
@@ -58,6 +59,14 @@ const RouteScaffold = () => {
                     <Route path="/how-it-works" element={<HowItWorksPage />} />
                     <Route path="/store" element={<PackStorePage />} />
                     <Route path="/checkout/status" element={<CheckoutStatusPage />} />
+                    <Route
+                        path="/redeem/:claim_id"
+                        element={
+                            <PrivateRoute>
+                                <RedeemPrize />
+                            </PrivateRoute>
+                        }
+                    />
                     <Route
                         path="/dashboard"
                         element={
