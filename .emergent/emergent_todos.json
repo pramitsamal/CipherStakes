@@ -1,26 +1,22 @@
 [
   {
-    "content": "Part 1a: Add next_draw_time helper + seed all 3 draws with ISO UTC values",
-    "status": "completed"
+    "content": "Backend: add POST /api/users/claim-daily + GET /api/users/streak with exact spec'd shapes",
+    "status": "in_progress"
   },
   {
-    "content": "Part 1b: Advance next_draw_time after execute_draw (+1 / +7 / +14 days)",
-    "status": "completed"
+    "content": "Backend: add last_claim_date, streak_count, ascension_bonus_claimed defaults to new users",
+    "status": "pending"
   },
   {
-    "content": "Part 2: CountdownTimer component with DD:HH:MM:SS + DRAW LIVE state",
-    "status": "completed"
+    "content": "Backend: add ascension bonus check (30 consecutive T1 cycles, one-time 500 coins) in draws_logic.enter_draw",
+    "status": "pending"
   },
   {
-    "content": "Part 3: Integrate timer into all 3 draw cards (DrawCard.js)",
-    "status": "completed"
+    "content": "Backend: add transactions collection index for DAILY_CLAIM / ASCENSION_BONUS logs",
+    "status": "pending"
   },
   {
-    "content": "Part 4: Integrate larger timer into DrawDetailPage below hero",
-    "status": "completed"
-  },
-  {
-    "content": "Verify: screenshots + next_draw_time advances after Run T1 demo",
-    "status": "completed"
+    "content": "Verify: curl all three endpoints and ascension path",
+    "status": "pending"
   }
 ]

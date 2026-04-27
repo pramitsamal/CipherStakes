@@ -5,7 +5,7 @@ These functions are the heart of the MVP and were validated via
 """
 import logging
 import secrets
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 from pymongo import ReturnDocument
@@ -34,6 +34,94 @@ class DrawInactiveError(Exception):
 
 class DrawAlreadyExecutedError(Exception):
     pass
+
+
+ASCENSION_TARGET_ENTRIES = 30
+ASCENSION_BONUS_COINS = 500
+
+
+async def _maybe_award_ascension_bonus(user_id: str, draw_id: str) -> Optional[dict]:
+    """One-time 500-coin Ascension Bonus for 30 consecutive T1 entries.
+
+    Runs atomically (guarded by `ascension_bonus_claimed: {$ne: True}`) so
+    concurrent entries cannot double-award.
+    Returns the bonus payload if awarded, else None.
+    """
+    if draw_id != "T1_DAILY_FLASH":
+        return None
+
+    user = await db.users.find_one({"user_id": user_id})
+    if user is None or user.get("ascension_bonus_claimed"):
+        return None
+
+    # Distinct T1 cycles excluding demo cycles
+    all_cycles = await db.entries.distinct(
+        "draw_cycle",
+        {"user_id": user_id, "draw_id": "T1_DAILY_FLASH"},
+    )
+    real = [
+        c for c in all_cycles
+        if isinstance(c, str) and not c.startswith("demo_")
+    ]
+    if len(real) < ASCENSION_TARGET_ENTRIES:
+        return None
+
+    real.sort(reverse=True)
+    top = real[:ASCENSION_TARGET_ENTRIES]
+    try:
+        dates = [date.fromisoformat(c) for c in top]
+    except ValueError:
+        return None
+
+    today = now_utc().date()
+    if dates[0] != today:
+        return None
+
+    # Check every adjacent pair is exactly 1 day apart
+    for i in range(ASCENSION_TARGET_ENTRIES - 1):
+        if (dates[i] - dates[i + 1]).days != 1:
+            return None
+
+    # Atomic award — only the first concurrent caller wins the $ne guard.
+    result = await db.users.find_one_and_update(
+        {
+            "user_id": user_id,
+            "ascension_bonus_claimed": {"$ne": True},
+        },
+        {
+            "$inc": {"coin_balance": ASCENSION_BONUS_COINS},
+            "$set": {
+                "ascension_bonus_claimed": True,
+                "ascension_bonus_claimed_at": now_iso(),
+            },
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+    if result is None:
+        return None
+
+    await db.transactions.insert_one(
+        {
+            "id": make_id(),
+            "user_id": user_id,
+            "type": "ASCENSION_BONUS",
+            "coins": ASCENSION_BONUS_COINS,
+            "description": (
+                f"{ASCENSION_TARGET_ENTRIES} consecutive T1 Daily Flash entries"
+            ),
+            "created_at": now_iso(),
+        }
+    )
+    logger.info(
+        "Ascension bonus awarded to %s (+%d coins)",
+        user_id,
+        ASCENSION_BONUS_COINS,
+    )
+    return {
+        "awarded": True,
+        "coins": ASCENSION_BONUS_COINS,
+        "new_balance": result["coin_balance"],
+    }
 
 
 async def enter_draw(
