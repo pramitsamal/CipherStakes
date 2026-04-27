@@ -82,6 +82,9 @@ class EnterDrawResponse(BaseModel):
     entries: List[EntryPublic]
     new_balance: int
     jackpot_after: Optional[float] = None
+    # Populated only when a 30-consecutive-T1 Ascension Bonus is awarded
+    # on this entry call. Shape: { awarded: bool, coins: int, new_balance: int }
+    ascension_bonus: Optional[dict] = None
 
 
 # ---------- Claims ----------

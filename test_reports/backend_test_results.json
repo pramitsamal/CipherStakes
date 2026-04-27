@@ -1,304 +1,358 @@
 {
-  "timestamp": "2026-04-27T11:23:06.740280",
+  "timestamp": "2026-04-27T14:19:29.255127",
   "base_url": "https://investor-pitch-17.preview.emergentagent.com",
-  "total_tests": 49,
-  "passed_tests": 48,
-  "failed_tests": 1,
-  "success_rate": 97.95918367346938,
+  "total_tests": 58,
+  "passed_tests": 56,
+  "failed_tests": 2,
+  "success_rate": 96.55172413793103,
   "test_results": [
     {
       "test": "GET /api/ returns health info",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:02.962425"
+      "timestamp": "2026-04-27T14:19:24.705673"
     },
     {
       "test": "GET /api/health returns ok",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.090492"
+      "timestamp": "2026-04-27T14:19:24.859004"
     },
     {
       "test": "GET /api/draws returns draws list",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.192695"
+      "timestamp": "2026-04-27T14:19:24.975635"
     },
     {
       "test": "Draws list contains 4 draws (T1, T2, T3, T4)",
       "success": true,
       "details": "Found 4 draws",
-      "timestamp": "2026-04-27T11:23:03.193259"
+      "timestamp": "2026-04-27T14:19:24.976299"
     },
     {
       "test": "GET /api/draws/T1_DAILY_FLASH returns draw info",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.342262"
+      "timestamp": "2026-04-27T14:19:25.105690"
     },
     {
       "test": "GET /api/draws/T1_DAILY_FLASH/stats returns stats",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.444559"
+      "timestamp": "2026-04-27T14:19:25.254168"
     },
     {
       "test": "GET /api/draws/T2_WEEKLY_STAKES returns draw info",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.549265"
+      "timestamp": "2026-04-27T14:19:25.363118"
     },
     {
       "test": "GET /api/draws/T2_WEEKLY_STAKES/stats returns stats",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.686297"
+      "timestamp": "2026-04-27T14:19:25.476036"
     },
     {
       "test": "GET /api/draws/T1_DAILY_FLASH returns jackpot >= 500",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.787299"
+      "timestamp": "2026-04-27T14:19:25.583146"
     },
     {
       "test": "T1 jackpot_usdc >= 500",
       "success": true,
-      "details": "Jackpot: $500.0",
-      "timestamp": "2026-04-27T11:23:03.787931"
+      "details": "Jackpot: $501.0",
+      "timestamp": "2026-04-27T14:19:25.583892"
     },
     {
       "test": "GET /api/packs returns 5 packs",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:03.888767"
+      "timestamp": "2026-04-27T14:19:25.704992"
     },
     {
       "test": "Packs list contains 5 packs (spark, standard, pro, elite, vault)",
       "success": true,
       "details": "Found 5 packs",
-      "timestamp": "2026-04-27T11:23:03.889359"
+      "timestamp": "2026-04-27T14:19:25.705671"
     },
     {
       "test": "Pack 'spark' exists",
       "success": true,
       "details": "Available packs: ['spark', 'standard', 'pro', 'elite', 'vault']",
-      "timestamp": "2026-04-27T11:23:03.889385"
+      "timestamp": "2026-04-27T14:19:25.705694"
     },
     {
       "test": "Pack 'standard' exists",
       "success": true,
       "details": "Available packs: ['spark', 'standard', 'pro', 'elite', 'vault']",
-      "timestamp": "2026-04-27T11:23:03.889392"
+      "timestamp": "2026-04-27T14:19:25.705701"
     },
     {
       "test": "Pack 'pro' exists",
       "success": true,
       "details": "Available packs: ['spark', 'standard', 'pro', 'elite', 'vault']",
-      "timestamp": "2026-04-27T11:23:03.889397"
+      "timestamp": "2026-04-27T14:19:25.705706"
     },
     {
       "test": "Pack 'elite' exists",
       "success": true,
       "details": "Available packs: ['spark', 'standard', 'pro', 'elite', 'vault']",
-      "timestamp": "2026-04-27T11:23:03.889402"
+      "timestamp": "2026-04-27T14:19:25.705710"
     },
     {
       "test": "Pack 'vault' exists",
       "success": true,
       "details": "Available packs: ['spark', 'standard', 'pro', 'elite', 'vault']",
-      "timestamp": "2026-04-27T11:23:03.889406"
+      "timestamp": "2026-04-27T14:19:25.705715"
     },
     {
       "test": "POST /api/auth/register creates user with 50 coin balance",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:04.264211"
+      "timestamp": "2026-04-27T14:19:26.086865"
     },
     {
       "test": "Registration returns JWT token",
       "success": true,
       "details": "Token received: True",
-      "timestamp": "2026-04-27T11:23:04.264939"
+      "timestamp": "2026-04-27T14:19:26.087567"
     },
     {
       "test": "New user has 50 coin balance",
       "success": true,
       "details": "Balance: 50",
-      "timestamp": "2026-04-27T11:23:04.264956"
+      "timestamp": "2026-04-27T14:19:26.087586"
     },
     {
       "test": "POST /api/auth/login authenticates user",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:04.594998"
+      "timestamp": "2026-04-27T14:19:26.414239"
     },
     {
       "test": "Login returns new JWT token",
       "success": false,
       "details": "New token received: True",
-      "timestamp": "2026-04-27T11:23:04.595730"
+      "timestamp": "2026-04-27T14:19:26.414906"
     },
     {
       "test": "GET /api/auth/me returns user profile",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:04.700728"
+      "timestamp": "2026-04-27T14:19:26.555288"
     },
     {
       "test": "Profile contains user email",
       "success": true,
-      "details": "Email: test_user_112303@example.com",
-      "timestamp": "2026-04-27T11:23:04.701315"
+      "details": "Email: test_user_141925@example.com",
+      "timestamp": "2026-04-27T14:19:26.555955"
     },
     {
       "test": "GET /api/claims/status returns claimed_today flag",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:04.797277"
+      "timestamp": "2026-04-27T14:19:26.666648"
     },
     {
       "test": "Claim status contains claimed_today flag",
       "success": true,
       "details": "Claimed today: False",
-      "timestamp": "2026-04-27T11:23:04.797900"
+      "timestamp": "2026-04-27T14:19:26.667365"
     },
     {
       "test": "POST /api/claims/daily first call credits 50 coins",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:04.899373"
+      "timestamp": "2026-04-27T14:19:26.820246"
     },
     {
       "test": "First claim credits coins",
       "success": true,
       "details": "Credited: True, Amount: 50",
-      "timestamp": "2026-04-27T11:23:04.899959"
+      "timestamp": "2026-04-27T14:19:26.820918"
     },
     {
       "test": "POST /api/claims/daily second call returns credited=false",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:05.031143"
+      "timestamp": "2026-04-27T14:19:26.950408"
     },
     {
       "test": "Second claim returns credited=false",
       "success": true,
       "details": "Credited: False",
-      "timestamp": "2026-04-27T11:23:05.031830"
+      "timestamp": "2026-04-27T14:19:26.951113"
     },
     {
       "test": "POST /api/draws/enter with insufficient coins returns 400",
       "success": true,
       "details": "Status: 400 (expected 400)",
-      "timestamp": "2026-04-27T11:23:05.132219"
+      "timestamp": "2026-04-27T14:19:27.070110"
     },
     {
       "test": "Insufficient coins error returned",
       "success": true,
       "details": "T2 entry correctly rejected due to insufficient coins",
-      "timestamp": "2026-04-27T11:23:05.132836"
+      "timestamp": "2026-04-27T14:19:27.070813"
     },
     {
       "test": "POST /api/draws/enter T1_DAILY_FLASH succeeds",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:05.246172"
+      "timestamp": "2026-04-27T14:19:27.214373"
     },
     {
       "test": "T1 entry returns entry with ID and hash",
-      "success": "130173b3ee4e109bfa7b7e8b643cfeb1d8f3e9f1932616adc9a3087387f02a16",
-      "details": "Entry ID: 435c3329..., Hash length: 64",
-      "timestamp": "2026-04-27T11:23:05.246810"
+      "success": "e0db1de4bca3f42a163d91d5272407579c624ffba9a1cc05805637d87ff19f3d",
+      "details": "Entry ID: 7295ba98..., Hash length: 64",
+      "timestamp": "2026-04-27T14:19:27.215179"
     },
     {
       "test": "Entry hash is sha256 (64 chars)",
       "success": true,
       "details": "Hash length: 64",
-      "timestamp": "2026-04-27T11:23:05.246827"
+      "timestamp": "2026-04-27T14:19:27.215199"
     },
     {
       "test": "POST /api/packs/checkout creates Stripe session",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:05.872555"
+      "timestamp": "2026-04-27T14:19:27.882980"
     },
     {
       "test": "Checkout returns session_id and URL",
       "success": true,
       "details": "Session ID: cs_test_..., URL: True",
-      "timestamp": "2026-04-27T11:23:05.873174"
+      "timestamp": "2026-04-27T14:19:27.883639"
     },
     {
-      "test": "GET /api/packs/checkout/status/cs_test_a1ZJyJM2uTenyuB8EozJbUNPqlM89ru4ckrPCs24zKaOcKK2vUPnZYKLiS polls status",
+      "test": "GET /api/packs/checkout/status/cs_test_a1D0M0E9rzKnLfYw8dygeUMIMoeitkP4GBa7VihgikAiQf1k2WA6bH4msH polls status",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:06.151444"
+      "timestamp": "2026-04-27T14:19:28.161934"
     },
     {
       "test": "Status polling returns session data",
       "success": true,
       "details": "Status: initiated",
-      "timestamp": "2026-04-27T11:23:06.152155"
+      "timestamp": "2026-04-27T14:19:28.162709"
     },
     {
       "test": "POST /api/draws/admin/run/T1_DAILY_FLASH executes draw",
-      "success": true,
-      "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:06.262493"
-    },
-    {
-      "test": "Draw execution returns result",
-      "success": true,
-      "details": "Status: won, Winner: True",
-      "timestamp": "2026-04-27T11:23:06.263094"
+      "success": false,
+      "details": "Status: 409 (expected 200), Response: {\"detail\":\"Draw T1_DAILY_FLASH cycle 2026-04-27 already executed\"}",
+      "timestamp": "2026-04-27T14:19:28.284171"
     },
     {
       "test": "POST /api/draws/admin/run/T1_DAILY_FLASH second call returns 409",
       "success": true,
       "details": "Status: 409 (expected 409)",
-      "timestamp": "2026-04-27T11:23:06.355946"
+      "timestamp": "2026-04-27T14:19:28.392997"
     },
     {
       "test": "Second execution correctly returns 409 conflict",
       "success": true,
       "details": "Draw already executed for same cycle",
-      "timestamp": "2026-04-27T11:23:06.356540"
+      "timestamp": "2026-04-27T14:19:28.393784"
     },
     {
       "test": "GET /api/draws/results/all returns results list",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:06.458407"
+      "timestamp": "2026-04-27T14:19:28.501441"
     },
     {
       "test": "Results endpoint returns data",
       "success": true,
-      "details": "Found 1 results",
-      "timestamp": "2026-04-27T11:23:06.458993"
+      "details": "Found 7 results",
+      "timestamp": "2026-04-27T14:19:28.502207"
     },
     {
       "test": "GET /api/users/me/referrals returns referral info",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:06.629987"
+      "timestamp": "2026-04-27T14:19:28.615958"
     },
     {
       "test": "Referrals endpoint returns referral_code",
       "success": true,
-      "details": "Referral code: 84OQO0W8",
-      "timestamp": "2026-04-27T11:23:06.630608"
+      "details": "Referral code: KZTCVSYV",
+      "timestamp": "2026-04-27T14:19:28.616634"
     },
     {
       "test": "POST /api/users/me/kyc saves KYC submission",
       "success": true,
       "details": "Status: 200 (expected 200)",
-      "timestamp": "2026-04-27T11:23:06.739475"
+      "timestamp": "2026-04-27T14:19:28.743238"
     },
     {
       "test": "KYC submission successful",
       "success": true,
       "details": "Status: submitted",
-      "timestamp": "2026-04-27T11:23:06.740207"
+      "timestamp": "2026-04-27T14:19:28.743946"
+    },
+    {
+      "test": "GET /api/users/me/ascension returns progress data",
+      "success": true,
+      "details": "Status: 200 (expected 200)",
+      "timestamp": "2026-04-27T14:19:28.873827"
+    },
+    {
+      "test": "Ascension endpoint returns all required fields",
+      "success": true,
+      "details": "Fields: ['target_entries', 'current_consecutive', 'ascension_bonus_claimed', 'ascension_bonus_amount', 'progress_pct']",
+      "timestamp": "2026-04-27T14:19:28.874474"
+    },
+    {
+      "test": "Ascension target_entries is 30",
+      "success": true,
+      "details": "Target: 30",
+      "timestamp": "2026-04-27T14:19:28.874491"
+    },
+    {
+      "test": "Ascension bonus_amount is 500",
+      "success": true,
+      "details": "Bonus amount: 500",
+      "timestamp": "2026-04-27T14:19:28.874497"
+    },
+    {
+      "test": "New user has 0 consecutive entries",
+      "success": true,
+      "details": "Consecutive: 1",
+      "timestamp": "2026-04-27T14:19:28.874502"
+    },
+    {
+      "test": "POST /api/users/claim-daily returns 404 (removed)",
+      "success": true,
+      "details": "Status: 404 (expected 404)",
+      "timestamp": "2026-04-27T14:19:29.004109"
+    },
+    {
+      "test": "GET /api/users/streak returns 404 (removed)",
+      "success": true,
+      "details": "Status: 404 (expected 404)",
+      "timestamp": "2026-04-27T14:19:29.144886"
+    },
+    {
+      "test": "POST /api/draws/enter T1 includes ascension_bonus field",
+      "success": true,
+      "details": "Status: 200 (expected 200)",
+      "timestamp": "2026-04-27T14:19:29.254354"
+    },
+    {
+      "test": "Draw entry response includes ascension_bonus field",
+      "success": true,
+      "details": "Ascension bonus: None",
+      "timestamp": "2026-04-27T14:19:29.255038"
+    },
+    {
+      "test": "New user ascension_bonus is null (not at threshold)",
+      "success": true,
+      "details": "Bonus value: None",
+      "timestamp": "2026-04-27T14:19:29.255055"
     }
   ]
 }

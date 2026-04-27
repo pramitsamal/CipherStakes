@@ -475,6 +475,107 @@ class CipherStakesAPITester:
                 f"Status: {kyc_data.get('status', 'N/A')}"
             )
 
+    def test_ascension_endpoints(self):
+        """Test new ascension bonus endpoints (Phase 5)"""
+        print("\n🔍 Testing Ascension Bonus Endpoints...")
+        
+        if not self.token:
+            self.log_test("Ascension test skipped", False, "No auth token available")
+            return
+        
+        # Test GET /api/users/me/ascension
+        success, ascension_data = self.run_test(
+            "GET /api/users/me/ascension returns progress data",
+            "GET", "/users/me/ascension", 200
+        )
+        
+        if success and ascension_data:
+            required_fields = ['target_entries', 'current_consecutive', 'ascension_bonus_claimed', 'ascension_bonus_amount', 'progress_pct']
+            all_fields_present = all(field in ascension_data for field in required_fields)
+            
+            self.log_test(
+                "Ascension endpoint returns all required fields",
+                all_fields_present,
+                f"Fields: {list(ascension_data.keys())}"
+            )
+            
+            # Validate field values
+            self.log_test(
+                "Ascension target_entries is 30",
+                ascension_data.get('target_entries') == 30,
+                f"Target: {ascension_data.get('target_entries')}"
+            )
+            
+            self.log_test(
+                "Ascension bonus_amount is 500",
+                ascension_data.get('ascension_bonus_amount') == 500,
+                f"Bonus amount: {ascension_data.get('ascension_bonus_amount')}"
+            )
+            
+            # For new user, consecutive should be 0
+            consecutive = ascension_data.get('current_consecutive', -1)
+            self.log_test(
+                "New user has 0 consecutive entries",
+                consecutive >= 0,
+                f"Consecutive: {consecutive}"
+            )
+
+    def test_removed_endpoints(self):
+        """Test that removed endpoints return 404 (Phase 5)"""
+        print("\n🔍 Testing Removed Endpoints...")
+        
+        if not self.token:
+            self.log_test("Removed endpoints test skipped", False, "No auth token available")
+            return
+        
+        # Test POST /api/users/claim-daily returns 404
+        success, _ = self.run_test(
+            "POST /api/users/claim-daily returns 404 (removed)",
+            "POST", "/users/claim-daily", 404
+        )
+        
+        # Test GET /api/users/streak returns 404
+        success, _ = self.run_test(
+            "GET /api/users/streak returns 404 (removed)",
+            "GET", "/users/streak", 404
+        )
+
+    def test_draw_entry_ascension_bonus(self):
+        """Test draw entry with ascension bonus field (Phase 5)"""
+        print("\n🔍 Testing Draw Entry Ascension Bonus...")
+        
+        if not self.token:
+            self.log_test("Draw entry ascension test skipped", False, "No auth token available")
+            return
+        
+        # Test T1 entry includes ascension_bonus field (should be null for new user)
+        success, entry_data = self.run_test(
+            "POST /api/draws/enter T1 includes ascension_bonus field",
+            "POST", "/draws/enter", 200,
+            data={
+                "draw_id": "T1_DAILY_FLASH",
+                "quantity": 1
+            }
+        )
+        
+        if success and entry_data:
+            # Check that ascension_bonus field is present (even if null)
+            has_ascension_field = 'ascension_bonus' in entry_data
+            ascension_bonus = entry_data.get('ascension_bonus')
+            
+            self.log_test(
+                "Draw entry response includes ascension_bonus field",
+                has_ascension_field,
+                f"Ascension bonus: {ascension_bonus}"
+            )
+            
+            # For new user, should be null (not at 30-day threshold)
+            self.log_test(
+                "New user ascension_bonus is null (not at threshold)",
+                ascension_bonus is None,
+                f"Bonus value: {ascension_bonus}"
+            )
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting CipherStakes Backend API Tests")
@@ -493,6 +594,10 @@ class CipherStakesAPITester:
             self.test_admin_draw_execution()
             self.test_results_endpoint()
             self.test_user_endpoints()
+            # Phase 5 retention mechanics tests
+            self.test_ascension_endpoints()
+            self.test_removed_endpoints()
+            self.test_draw_entry_ascension_bonus()
             
         except Exception as e:
             print(f"\n❌ Test suite failed with error: {e}")

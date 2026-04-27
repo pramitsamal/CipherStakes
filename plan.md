@@ -10,7 +10,9 @@
   - Stripe Checkout + idempotent transaction crediting (webhook-safe)
   - Scheduler-driven draws (T1 daily, T2 weekly) + idempotent draw cycles
   - “Provably fair” entry receipts (UUID + sha256 receipt hash)
-- ✅ **Ship a working, polished demo app** ready for investors to click through on desktop and mobile.
+- ⏳ **Improve retention / progression mechanics (surgical additions only)**:
+  - Keep existing Daily Claim + 7-day streak + 1-miss protection under `/api/claims/*`
+  - Add **Ascension Bonus** (30 consecutive T1 Daily Flash entry-days) with **backend award + dashboard progress UI**
 
 ---
 
@@ -62,7 +64,7 @@
 1) **Backend (FastAPI + Motor + APScheduler + MongoDB)**
    - ✅ Full API under `/api`:
      - **Auth**: register, login, me, verify-email, Google OAuth scaffold (`/api/auth/google/*`)
-     - **Claims**: daily claim + status
+     - **Claims**: daily claim + status (`/api/claims/daily`, `/api/claims/status`)
      - **Draws**: list, detail, stats, enter, results history, all-results
      - **Demo/Admin**: `POST /api/draws/admin/run/{draw_id}` (on-demand draw execution)
      - **Packs**: list packs, create Stripe Checkout session, polling checkout status, Stripe webhook
@@ -114,7 +116,7 @@
 ### Phase 3 — Feature Expansion (auth + compliance boosters + winner flow)
 **Goal:** deliver investor-critical completeness beyond the core loop.
 
-**Status:** ✅ COMPLETE
+**Status:** ✅ COMPLETE (with Ascension moved to Phase 5)
 
 1) **Auth**
    - ✅ Email/password auth with bcrypt + JWT
@@ -123,14 +125,13 @@
 2) **AMOE / growth mechanics**
    - ✅ Referral codes + 200 coin bonus on referred signup
    - ✅ Email verification bonus (+100 coins)
-   - ✅ Streak logic implemented (7-day + 1-miss protection) with weekly bonus support
-   - ⏳ Ascension bonus (30 consecutive T1 entries) **not implemented yet** (explicitly deferred)
+   - ✅ Daily claim + streak tracking (7-day + 1-miss protection) with weekly bonus support via `/api/claims/*`
 
 3) **Winner flow**
    - ✅ Winner notification (email via Resend if configured; stdout fallback otherwise)
    - ✅ KYC submission form and backend storage
 
-**User stories (Phase 3):** ✅ Completed (except Ascension)
+**User stories (Phase 3):** ✅ Completed
 1. User can sign up/login and stay authenticated.
 2. Email verification grants a one-time bonus.
 3. Referrals credit coins correctly.
@@ -158,6 +159,72 @@
 
 ---
 
+### Phase 5 — Retention Mechanics (Ascension Bonus + UI) — *Surgical additions only*
+**Goal:** add a progression mechanic that rewards consistent participation while preserving current streak/claims implementation and premium UI.
+
+**Status:** ⏳ IN PROGRESS
+
+#### 5.1 Backend — Ascension award wiring + transaction logs
+1) **Wire Ascension award into draw entry path**
+   - Update `backend/draws_logic.py::enter_draw()` to call `_maybe_award_ascension_bonus(user_id, draw_id)` after successful entry creation.
+   - Ensure:
+     - Only applies to `T1_DAILY_FLASH`
+     - One-time award guarded by `ascension_bonus_claimed: {$ne: True}`
+     - Uses real (non-demo) daily cycles (excludes cycles prefixed with `demo_`)
+
+2) **Indexes (minimal additions)**
+   - Update `backend/db.py::create_indexes()` to add indexes needed for the new retention logs:
+     - `db.transactions.create_index([("user_id", 1), ("created_at", -1)])`
+     - `db.transactions.create_index("type")` (supports filtering DAILY_CLAIM vs ASCENSION_BONUS)
+
+3) **Remove duplicate / conflicting retention endpoints**
+   - Remove or disable the draft duplicate endpoints in `backend/routes/user_routes.py`:
+     - `POST /api/users/claim-daily`
+     - `GET /api/users/streak`
+   - Keep **existing** implementation as the source of truth:
+     - `POST /api/claims/daily`
+     - `GET /api/claims/status`
+
+#### 5.2 Frontend — small Dashboard Ascension progress card (premium dark luxury)
+1) **Add Ascension progress UI to Dashboard**
+   - Add a compact card/section on `frontend/src/pages/DashboardPage.js`:
+     - Title: “Ascension” / “30-Day Ascension Bonus”
+     - Display:
+       - current progress (e.g., `current_consecutive / 30`)
+       - progress bar (gold fill on dark surface)
+       - status badge: “Claimed” if already awarded
+       - helper text explaining rule: “1 entry per day on T1, 30 consecutive days”
+     - Pull data from a lightweight API (recommended: `GET /api/users/me/ascension`)
+
+2) **Add API call + state**
+   - In Dashboard load (`loadAll`), include `api.get('/users/me/ascension')`.
+
+3) **Maintain theme constraints**
+   - Use existing CSS variables (`--cs-bg`, `--cs-surface`, `--cs-border`, `--cs-gold`, `--cs-text-muted`) and existing button/badge components.
+   - No refactors of existing Dashboard layout; add-only.
+
+#### 5.3 Testing — backend curl + frontend smoke
+1) **Backend manual tests (curl)**
+   - Verify `/api/claims/daily` still works unchanged.
+   - Verify ascension award:
+     - Create 30 consecutive `T1_DAILY_FLASH` cycles in DB (or seed test user/entries) and confirm:
+       - award occurs exactly once
+       - coin balance increments by +500
+       - transaction log contains `type=ASCENSION_BONUS`
+
+2) **Frontend smoke test**
+   - Log in → Dashboard:
+     - Ascension card renders
+     - Progress loads without errors
+     - “Claimed” state is reflected if bonus is already awarded
+
+**Exit criteria (Phase 5):**
+- Ascension bonus is awarded exactly once at 30 consecutive T1 entry-days.
+- No regressions to `/api/claims/*` daily streak logic or dashboard claim UX.
+- Dashboard displays Ascension progress in premium dark-luxury style.
+
+---
+
 ## 3) Next Actions
 
 ### Immediate (before investor demos)
@@ -165,6 +232,8 @@
    - **https://investor-pitch-17.preview.emergentagent.com**
 2) ✅ Demo flow script (recommended):
    - Landing → Register → Dashboard (claim) → Draw detail (enter) → Receipt → Results → Run T1 now.
+3) ⏳ Add Ascension demo step (after Phase 5):
+   - Dashboard → Ascension card → show progress / claimed state
 
 ### Before “real money” launch
 1) Add production keys to `backend/.env`:
@@ -178,7 +247,6 @@
    - Admin controls (restricted)
 
 ### Optional enhancements (post-MVP)
-- Ascension bonus (30 consecutive T1 entries)
 - Web3 wallet connect + on-chain receipts
 - Real USDC payout rails + physical prize fulfillment
 - Admin dashboard for draw/prize management
@@ -194,3 +262,4 @@
 - ✅ `.env.example` complete; clear placeholders for keys.
 - ✅ Code includes explicit flags for future Chainlink VRF replacement.
 - ✅ Testing agent validates end-to-end with no critical bugs.
+- ⏳ Retention upgrade: Ascension bonus awards correctly + Dashboard shows progress without regressions.

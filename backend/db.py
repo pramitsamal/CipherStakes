@@ -37,3 +37,6 @@ async def create_indexes() -> None:
     # T3 redemption flow
     await db.redemptions.create_index("winner_claim_id", unique=True)
     await db.redemptions.create_index([("user_id", 1), ("created_at", -1)])
+    # Retention (Ascension bonus + future coin-side ledger)
+    await db.transactions.create_index([("user_id", 1), ("created_at", -1)])
+    await db.transactions.create_index("type")

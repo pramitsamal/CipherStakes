@@ -99,7 +99,7 @@ async def enter_draw_endpoint(
     payload: EnterDrawRequest, user: dict = Depends(get_current_user)
 ):
     try:
-        entries, new_balance, jackpot_after = await enter_draw(
+        entries, new_balance, jackpot_after, ascension_bonus = await enter_draw(
             user["user_id"], payload.draw_id, payload.quantity
         )
     except InsufficientCoinsError as exc:
@@ -122,6 +122,7 @@ async def enter_draw_endpoint(
         ],
         new_balance=new_balance,
         jackpot_after=jackpot_after,
+        ascension_bonus=ascension_bonus,
     )
 
 

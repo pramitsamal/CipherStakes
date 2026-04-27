@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import StreakBar from '@/components/common/StreakBar';
+import AscensionCard from '@/components/common/AscensionCard';
 
 const format = (n) => Number(n || 0).toLocaleString();
 
@@ -16,17 +17,20 @@ const DashboardPage = () => {
     const [entries, setEntries] = useState([]);
     const [claimStatus, setClaimStatus] = useState(null);
     const [referrals, setReferrals] = useState(null);
+    const [ascension, setAscension] = useState(null);
     const [claiming, setClaiming] = useState(false);
 
     const loadAll = useCallback(async () => {
-        const [e, c, r] = await Promise.all([
+        const [e, c, r, a] = await Promise.all([
             api.get('/users/me/entries?limit=10'),
             api.get('/claims/status'),
             api.get('/users/me/referrals'),
+            api.get('/users/me/ascension'),
         ]);
         setEntries(e.data || []);
         setClaimStatus(c.data);
         setReferrals(r.data);
+        setAscension(a.data);
     }, []);
 
     useEffect(() => {
@@ -230,6 +234,11 @@ const DashboardPage = () => {
                             <StatMini label="Coins earned" value={referrals?.total_coins_earned ?? 0} testid="referral-stat-coins" />
                         </div>
                     </motion.div>
+                </div>
+
+                {/* Ascension progression (read-only, surfaces 30-day T1 bonus) */}
+                <div className="mt-6">
+                    <AscensionCard data={ascension} />
                 </div>
 
                 {/* Entries */}

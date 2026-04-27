@@ -108,6 +108,19 @@ const DrawDetailPage = () => {
             setJackpotAfter(res.data.jackpot_after);
             setModalOpen(false);
             toast.success(`Locked in ${res.data.entries.length} entries`);
+            // Surface the 30-day T1 Ascension Bonus as a separate, premium toast
+            // when it fires on this entry.
+            const bonus = res.data.ascension_bonus;
+            if (bonus && bonus.awarded) {
+                toast.success(
+                    `Ascension unlocked — +${(bonus.coins ?? 500).toLocaleString()} Cipher Coins`,
+                    {
+                        description:
+                            '30 consecutive Daily Flash entries. One-time bonus credited to your balance.',
+                        duration: 8000,
+                    },
+                );
+            }
             await Promise.all([refreshUser(), loadDraw()]);
         } catch (err) {
             const msg = err?.response?.data?.detail || 'Failed to lock in entry';

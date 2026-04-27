@@ -1,22 +1,34 @@
 [
   {
-    "content": "Backend: add POST /api/users/claim-daily + GET /api/users/streak with exact spec'd shapes",
+    "content": "Backend: Remove duplicate /api/users/claim-daily and /api/users/streak from user_routes.py (keep me/ascension)",
+    "status": "completed"
+  },
+  {
+    "content": "Backend: Wire _maybe_award_ascension_bonus into enter_draw (4-tuple return)",
+    "status": "completed"
+  },
+  {
+    "content": "Backend: Update EnterDrawResponse model + draws_routes.enter_draw_endpoint to surface ascension bonus",
+    "status": "completed"
+  },
+  {
+    "content": "Backend: Add db.transactions indexes (user_id+created_at, type) in db.py",
+    "status": "completed"
+  },
+  {
+    "content": "Backend: Restart backend + curl-test /api/claims/* unchanged + /api/users/me/ascension + simulate 30-day ascension award",
+    "status": "completed"
+  },
+  {
+    "content": "Frontend: Add Ascension progress card to DashboardPage with premium dark-luxury style",
+    "status": "completed"
+  },
+  {
+    "content": "Frontend: Show celebratory toast on enter_draw response when ascension_bonus.awarded === true (DrawDetailPage)",
+    "status": "completed"
+  },
+  {
+    "content": "Verify: lint frontend + screenshot dashboard + run testing_agent for regression check",
     "status": "in_progress"
-  },
-  {
-    "content": "Backend: add last_claim_date, streak_count, ascension_bonus_claimed defaults to new users",
-    "status": "pending"
-  },
-  {
-    "content": "Backend: add ascension bonus check (30 consecutive T1 cycles, one-time 500 coins) in draws_logic.enter_draw",
-    "status": "pending"
-  },
-  {
-    "content": "Backend: add transactions collection index for DAILY_CLAIM / ASCENSION_BONUS logs",
-    "status": "pending"
-  },
-  {
-    "content": "Verify: curl all three endpoints and ascension path",
-    "status": "pending"
   }
 ]

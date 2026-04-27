@@ -126,10 +126,11 @@ async def _maybe_award_ascension_bonus(user_id: str, draw_id: str) -> Optional[d
 
 async def enter_draw(
     user_id: str, draw_id: str, quantity: int
-) -> tuple[list[dict], int, Optional[float]]:
+) -> tuple[list[dict], int, Optional[float], Optional[dict]]:
     """Atomically burn coins and create entries.
 
-    Returns (entries, new_balance, jackpot_after_for_rolling_or_None).
+    Returns (entries, new_balance, jackpot_after_for_rolling_or_None,
+    ascension_bonus_or_None).
     Raises InsufficientCoinsError / DrawInactiveError.
     """
     if quantity <= 0:
@@ -182,7 +183,22 @@ async def enter_draw(
         )
         jackpot_after = updated.get("jackpot_usdc") if updated else None
 
-    return entries, user["coin_balance"], jackpot_after
+    # Ascension bonus check (T1 only, one-time, atomic). Runs after entry
+    # insertion so today's cycle is included in the consecutive-day tally.
+    ascension_bonus: Optional[dict] = None
+    try:
+        ascension_bonus = await _maybe_award_ascension_bonus(user_id, draw_id)
+    except Exception as exc:  # pragma: no cover — never let bonus break entry
+        logger.warning("ascension bonus check failed for %s: %s", user_id, exc)
+        ascension_bonus = None
+
+    # If the bonus was awarded, the user's balance now includes it; reflect that
+    # in the returned new_balance so the client never shows a stale value.
+    new_balance = user["coin_balance"]
+    if ascension_bonus and ascension_bonus.get("awarded"):
+        new_balance = ascension_bonus.get("new_balance", new_balance)
+
+    return entries, new_balance, jackpot_after, ascension_bonus
 
 
 async def _advance_next_draw_time(draw_id: str, draw_doc: dict) -> None:
