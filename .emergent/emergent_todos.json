@@ -29,6 +29,6 @@
   },
   {
     "content": "Verify: lint frontend + screenshot dashboard + run testing_agent for regression check",
-    "status": "in_progress"
+    "status": "completed"
   }
 ]
