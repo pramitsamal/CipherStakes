@@ -13,35 +13,35 @@
   },
   {
     "content": "Phase 2: Get design guidelines from design_agent",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Build backend (FastAPI + MongoDB + APScheduler + Stripe webhook)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Build frontend (premium dark luxury UI per spec)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Seed T1 Daily Flash and T2 Weekly Stakes draws",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Wire animated live jackpot counter (30s poll)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: All user stories covered in development",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: End-to-end testing with testing_agent_v3",
-    "status": "pending"
+    "status": "in_progress"
   },
   {
     "content": "Phase 3: Add JWT auth + Google OAuth scaffolding + referrals + streaks + winner flow",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 3: Testing + polish + mobile responsiveness",
